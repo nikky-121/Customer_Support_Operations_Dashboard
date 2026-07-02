@@ -1,3 +1,15 @@
+# Ignore everything inside these folders
+Raw_Data/**
+Processed_Data/**
+
+# But keep the folders themselves
+!Raw_Data/
+!Processed_Data/
+
+# Keep the placeholder files
+!Raw_Data/.gitkeep
+!Processed_Data/.gitkeep
+
 # Python
 __pycache__/
 *.pyc
@@ -5,7 +17,7 @@ __pycache__/
 *.pyd
 .ipynb_checkpoints/
 
-# Virtual environments
+# Virtual Environment
 venv/
 .venv/
 env/
@@ -13,28 +25,12 @@ env/
 # VS Code
 .vscode/
 
-# Python environment files
-.python-version
+# Environment
+.env
 
-# Power BI cache
-*.pbix.autosave
-*.tmp
-
-# OS files
+# Windows
 Thumbs.db
 Desktop.ini
 
 # Logs
 *.log
-
-# Secrets
-.env
-
-# Company data
-Raw_Data/
-Processed_Data/
-
-# Data files
-*.csv
-*.xlsx
-*.xls
