@@ -2,7 +2,7 @@ import pandas as pd
 import re
 
 # Read FactCalls
-df = pd.read_csv(r"../Processed_Data/FactCalls/FactCalls.csv")
+df = pd.read_excel(r"../Processed_Data/FactCalls/FactCalls.xlsx")
 
 activity_rows = []
 
@@ -22,8 +22,8 @@ for _, row in df.iterrows():
     # ==========================
     if direction == "Inbound":
 
-        dialed_agents = set()
-        answered_agents = set()
+        dialed_agents = []
+        answered_agents = []
 
         for agent, status in agents:
 
@@ -34,36 +34,46 @@ for _, row in df.iterrows():
                 continue
 
             if status == "Dialed":
-                dialed_agents.add(agent)
+                if agent not in dialed_agents:
+                    dialed_agents.append(agent)
 
             elif status == "Answered":
-                answered_agents.add(agent)
+                if agent not in answered_agents:
+                    answered_agents.append(agent)
 
-        # Answered records
-        for agent in answered_agents:
+        # Agents missed
+        for agent in dialed_agents:
 
-            activity_rows.append({
-                "Call ID": row["Call ID"],
-                "Date": row["Date"],
-                "Product": row["Product"],
-                "Direction": row["Direction"],
-                "Department": row["Department"],
-                "Agent": agent,
-                "Activity": "Answered"
-            })
+            if agent not in answered_agents:
 
-        # Missed records
-        for agent in (dialed_agents - answered_agents):
+                activity_rows.append({
+                    "Call ID": row["Call ID"],
+                    "Date": row["Date"],
+                    "Product": row["Product"],
+                    "Direction": row["Direction"],
+                    "Department": row["Department"],
+                    "Agent Name": agent,
+                    "Activity": "Missed",
+                    "Client Number": row["Client Number"],
+                    "Call Duration": 0
+                })
 
-            activity_rows.append({
-                "Call ID": row["Call ID"],
-                "Date": row["Date"],
-                "Product": row["Product"],
-                "Direction": row["Direction"],
-                "Department": row["Department"],
-                "Agent": agent,
-                "Activity": "Missed"
-            })
+        # Agents answered
+        for agent in dialed_agents:
+
+            if agent in answered_agents:
+
+                activity_rows.append({
+                    "Call ID": row["Call ID"],
+                    "Date": row["Date"],
+                    "Product": row["Product"],
+                    "Direction": row["Direction"],
+                    "Department": row["Department"],
+                    "Agent Name": agent,
+                    "Activity": "Answered",
+                    "Client Number": row["Client Number"],
+                    "Call Duration": row["Call Duration"]
+                })
 
     # ==========================
     # OUTBOUND LOGIC
@@ -106,8 +116,10 @@ for _, row in df.iterrows():
                 "Product": row["Product"],
                 "Direction": row["Direction"],
                 "Department": row["Department"],
-                "Agent": calling_agent,
-                "Activity": "Answered"
+                "Agent Name": calling_agent,
+                "Activity": "Answered",
+                "Client Number": row["Client Number"],
+                "Call Duration": row["Call Duration"]
             })
 
         # Agent-to-agent test call
@@ -123,20 +135,25 @@ for _, row in df.iterrows():
                 "Product": row["Product"],
                 "Direction": row["Direction"],
                 "Department": row["Department"],
-                "Agent": calling_agent,
-                "Activity": "Missed"
+                "Agent Name": calling_agent,
+                "Activity": "Missed",
+                "Client Number": row["Client Number"],
+                "Call Duration": 0
             })
 
 
 # Create dataframe
 agent_df = pd.DataFrame(activity_rows)
 
+agent_df["Date"] = pd.to_datetime(agent_df["Date"])
+agent_df["Date"] = agent_df["Date"].dt.strftime("%d-%m-%Y %H:%M:%S")
+
 print("Rows created:", len(agent_df))
 print(agent_df.head())
 
 # Save
-agent_df.to_csv(
-    r"../Processed_Data/FactAgentActivity/FactAgentActivity.csv",
+agent_df.to_excel(
+    r"../Processed_Data/FactAgentActivity/FactAgentActivity.xlsx",
     index=False
 )
 
@@ -144,4 +161,4 @@ print("FactAgentActivity saved successfully")
 
 print(agent_df["Direction"].value_counts())
 print(agent_df["Activity"].value_counts())
-print(agent_df["Agent"].nunique())
+print(agent_df["Agent Name"].nunique())

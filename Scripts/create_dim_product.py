@@ -1,13 +1,31 @@
 import pandas as pd
 
-products = pd.DataFrame({
-    "Product": ["ONT", "OLT"]
+# Read FactCalls
+df = pd.read_excel(
+    r"../Processed_Data/FactCalls/FactCalls.xlsx"
+)
+
+# Extract unique products
+products = (
+    df["Product"]
+    .dropna()
+    .astype(str)
+    .str.strip()
+    .drop_duplicates()
+    .sort_values()
+)
+
+# Create Product Key
+dim_product = pd.DataFrame({
+    "Product Key": range(1, len(products) + 1),
+    "Product": products.values
 })
 
-products.to_csv(
-    r"../processed_data/DimProduct/DimProduct.csv",
+# Save
+dim_product.to_excel(
+    r"../Processed_Data/DimProduct/DimProduct.xlsx",
     index=False
 )
 
-print(products)
-print("\nDimProduct created successfully")
+print(dim_product)
+print("DimProduct created successfully.")

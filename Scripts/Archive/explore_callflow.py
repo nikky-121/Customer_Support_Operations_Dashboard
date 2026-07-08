@@ -1,7 +1,7 @@
 import pandas as pd
 
-df = pd.read_csv(
-    r"../Processed_Data/FactCalls/FactCalls.csv"
+df = pd.read_excel(
+    r"../../Processed_Data/FactCalls/FactCalls.xlsx"
 )
 
 print("="*100)

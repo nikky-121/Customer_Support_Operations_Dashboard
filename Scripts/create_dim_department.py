@@ -1,18 +1,31 @@
 import pandas as pd
 
-df = pd.read_csv( r"../Processed_Data/FactDepartmentDaily/FactDepartmentDaily.csv")
-
-dim_department = (
-    df[["Product", "Department Name"]]
-    .drop_duplicates()
-    .sort_values(["Product", "Department Name"])
+# Read FactDepartmentDaily
+df = pd.read_excel(
+    r"../Processed_Data/FactDepartmentDaily/FactDepartmentDaily.xlsx"
 )
 
-dim_department.columns = ["Product", "Department"]
+# Extract unique departments
+departments = (
+    df["Department"]
+    .dropna()
+    .astype(str)
+    .str.strip()
+    .drop_duplicates()
+    .sort_values()
+)
 
-dim_department.to_csv(
-    "DimDepartment.csv",
+# Create DimDepartment
+dim_department = pd.DataFrame({
+    "Department Key": range(1, len(departments) + 1),
+    "Department": departments.values
+})
+
+# Save
+dim_department.to_excel(
+    r"../Processed_Data/DimDepartment/DimDepartment.xlsx",
     index=False
 )
 
-print("\nDimDepartment created sucessfully")
+print(dim_department)
+print("DimDepartment created successfully.")

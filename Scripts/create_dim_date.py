@@ -1,38 +1,57 @@
 import pandas as pd
 
-# Create date range
-dates = pd.date_range(
-    start="2026-01-01",
-    end="2030-12-31",
-    freq="D"
+# Read FactCalls
+df = pd.read_excel(
+    r"../Processed_Data/FactCalls/FactCalls.xlsx"
 )
 
+# Convert Date column to datetime
+df["Date"] = pd.to_datetime(df["Date"])
+
+# Extract unique dates (remove time)
+dates = (
+    df["Date"]
+    .dt.normalize()
+    .drop_duplicates()
+    .sort_values()
+)
+
+# Create DimDate
 dim_date = pd.DataFrame({
     "Date": dates
 })
 
-# Date attributes
-dim_date["Year"] = dim_date["Date"].dt.year
-dim_date["Quarter"] = "Q" + dim_date["Date"].dt.quarter.astype(str)
-dim_date["Month Number"] = dim_date["Date"].dt.month
-dim_date["Month Name"] = dim_date["Date"].dt.month_name()
-dim_date["Year Month"] = dim_date["Date"].dt.strftime("%Y-%m")
-dim_date["Week Number"] = dim_date["Date"].dt.isocalendar().week
+# Calendar attributes
 dim_date["Day"] = dim_date["Date"].dt.day
-dim_date["Day Name"] = dim_date["Date"].dt.day_name()
-dim_date["Day Of Week"] = dim_date["Date"].dt.weekday + 1
+dim_date["Month"] = dim_date["Date"].dt.month
+dim_date["Month Name"] = dim_date["Date"].dt.strftime("%B")
+dim_date["Quarter"] = "Q" + dim_date["Date"].dt.quarter.astype(str)
+dim_date["Year"] = dim_date["Date"].dt.year
+dim_date["Weekday"] = dim_date["Date"].dt.strftime("%A")
+dim_date["Week Number"] = dim_date["Date"].dt.isocalendar().week.astype(int)
 
-# Weekend flag
-dim_date["Is Weekend"] = dim_date["Day Name"].isin(
-    ["Saturday", "Sunday"]
-)
+# Format Date
+dim_date["Date"] = dim_date["Date"].dt.strftime("%d-%m-%Y")
+
+# Reorder columns
+dim_date = dim_date[
+    [
+        "Date",
+        "Day",
+        "Month",
+        "Month Name",
+        "Quarter",
+        "Year",
+        "Weekday",
+        "Week Number",
+    ]
+]
 
 # Save
-dim_date.to_csv(
-    r"../Processed_Data/DimDate/DimDate.csv",
+dim_date.to_excel(
+    r"../Processed_Data/DimDate/DimDate.xlsx",
     index=False
 )
 
 print(dim_date.head())
-print("\nRows:", len(dim_date))
-print("\nDimDate created successfully")
+print("DimDate created successfully.")
